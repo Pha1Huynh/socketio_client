@@ -2,9 +2,17 @@ import express from "express";
 import bodyParser, { urlencoded } from "body-parser";
 import viewEngine from "./config/viewEngine";
 import initWebRoutes from "./route/web";
-import connectDB from "./config/connectDB";
+import initSocketio from "./route/socketio";
 require("dotenv").config();
 let app = express();
+const server = require("http").Server(app);
+
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
 // Add headers before the routes are defined
 //khac phuc loi CORS
 // app.use(cors({ origin: true }));
@@ -38,8 +46,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 viewEngine(app);
 initWebRoutes(app);
-connectDB();
+
 let port = process.env.PORT || 8080;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log("backend node js is runnung on the http://localhost:" + port);
 });
+io.on("connection", (socket) => initSocketio(socket, io));
